@@ -310,5 +310,25 @@ def my_mainfunc():
         rate.sleep()
 
 
+    print ("PATH TRACKED")                                                                                                                   
+    print ("Total MPC iterations = " , n_iter)
+    t_end = time.time()
+    print ("Total Time taken = " , t_end - t_start)
     
+
+    msg.linear.x = 0                                                # stopping the bot                                      
+    msg.linear.y = 0 
+    msg.linear.z = 0 
+    msg.angular.x = 0 
+    msg.angular.y = 0 
+    msg.angular.z = 0 
+    instance.publish(msg)
+
+    
+if __name__ == '__main__':
+   
+    try:
+        my_mainfunc()
+    except rospy.ROSInterruptException:
+        pass
             
