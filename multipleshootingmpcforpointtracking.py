@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 
 import rospy
+import numpy as np
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
-
+from std_msgs.msg import Float32MultiArray
+from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
 from numpy import *
 import time
 import math 
+import casadi as ca
 
 pi = math.pi
 t_start = time.time()
@@ -58,6 +62,7 @@ global x,y,theta,qx,qy,qz,qw,V,omega                                        # (x
 global total_path_points                                                                                                                                        
 total_path_points = 0                                                                                                                                                                            
 global path                                                                                                                                         
+path = np.zeros((1,2))
 
 def odomfunc(odom):
 
@@ -92,7 +97,7 @@ def my_mainfunc():
 
     rospy.Subscriber('/odom', Odometry , odomfunc)    
    
-    rospy.Subscriber('/astroid_path', Path, pathfunc)                                                                                                                                                                   
+    rospy.Subscriber('/path_topic', Path, pathfunc)                                                                                                                                                                   
     
     instance = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 
