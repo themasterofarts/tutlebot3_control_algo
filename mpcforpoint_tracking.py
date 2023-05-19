@@ -69,7 +69,7 @@ def odomfunc(odom):
     
 def my_mainfunc():
     
-    rospy.init_node('mpc_singleShooting_pointTracking_turtlebot3', anonymous=True)
+    rospy.init_node('mpcforpoint_tracking', anonymous=True)
 
     rospy.Subscriber('/odom', Odometry , odomfunc)    
       

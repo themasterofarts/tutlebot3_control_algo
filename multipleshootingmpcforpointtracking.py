@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 
 import rospy
-import numpy as np
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
-from std_msgs.msg import Float32MultiArray
-from nav_msgs.msg import Path
-from geometry_msgs.msg import PoseStamped
-from numpy import *
+from nav_msgs.msg import Path                                                                                                                            
+import casadi as ca
+import numpy as np                                                                                                    
 import time
 import math 
-import casadi as ca
+from scipy.spatial import KDTree                                                                                       
+from geometry_msgs.msg import PoseStamped
+
 
 pi = math.pi
+inf = np.inf
 t_start = time.time()
 
 
@@ -22,37 +23,41 @@ t_start = time.time()
 
 n_states = 3
 n_controls = 2
-N = 100                                                                         #Prediction horizon(same as control horizon)
-delta_T = 0.2                                                                   #timestamp bw two predictions
+N =100                                                                      # Prediction horizon(same as control horizon)
+                                                                                                                
                       
-# if theta target is > pi, write as a negative angle
-X_target = array([2,1,pi], dtype = 'f')                                          
-error_allowed = 5e-2
+error_allowed = 0.1
+
+U_ref = np.array([0.22,0], dtype ='f')     				                    # Reference velocity and reference omega					                               		                                                                   
+
+Q_x = 300                                                                   # gains to control error in x,y,theta during motion
+Q_y = 300
+Q_theta =  20                                                                                                                                            
+R1 = 250                                                                    # gains to control magnitude of V and omega                                                                                                           
+R2 = 80
+
+error_allowed_in_g = 1e-100                                                 # error in contraints (should be ~ 0)
 
 
-Q_x = 100                                                                       # gains to control error in x,y,theta during motion
-Q_y = 100
-Q_theta = 6
-R1 = 300                                                                        # gains to control magnitude of V and omega                                                                                                           
-R2 = 75
 
-error_allowed_in_g = 1e-100                                                     # error in contraints (should be ~ 0)
 
 """# parameters that depend on simulator 
 """
-n_bound_var = n_states                                                          #although theta will never have any bound but, we need to specify it because X is part of OPT_variables           
-x_bound_max = inf                      
+n_bound_var = n_states                                 
+x_bound_max = inf                                                           # enter x and y bounds when limited world like indoor environments                   
 x_bound_min = -inf                     
-y_bound_max = inf                     
-y_bound_min = -inf                                                                                
+y_bound_max = inf                      
+y_bound_min = -inf                     
 theta_bound_max = inf                     
 theta_bound_min = -inf                     
 
 
-v_max = 0.22
-v_min = -v_max
+v_max = 0.22                                                                                                                                             
+v_min = 0#-v_max                                                            # when we don't want to track the path on backward direction                                                                                                                                            
 omega_max = 2.84                                                
 omega_min = -omega_max
+
+
 
 global x,y,theta,qx,qy,qz,qw,V,omega                                        # (x,y,theta) will store the current position and orientation 
                                                                             # qx,qy,qz,qw will store the quaternions of the bot position
@@ -62,8 +67,9 @@ global x,y,theta,qx,qy,qz,qw,V,omega                                        # (x
 global total_path_points                                                                                                                                        
 total_path_points = 0                                                                                                                                                                            
 global path                                                                                                                                         
-path = np.zeros((1,2))
 
+    
+    
 def odomfunc(odom):
 
     global x,y,qx,qy,qz,qw,theta
@@ -88,12 +94,11 @@ def pathfunc(Path):
     for i in range(0,total_path_points):                                                                                                                
         path[i][0] = Path.poses[i].pose.position.x
         path[i][1] = Path.poses[i].pose.position.y   
+    
 
-    
-    
 def my_mainfunc():
     
-    rospy.init_node('mpc_multipleShooting_pointTracking_turtlebot3', anonymous=True)
+    rospy.init_node('multipleshootingmpcforpointtracking', anonymous=True)
 
     rospy.Subscriber('/odom', Odometry , odomfunc)    
    
@@ -315,6 +320,8 @@ def my_mainfunc():
         rate.sleep()
 
 
+    
+            
     print ("PATH TRACKED")                                                                                                                   
     print ("Total MPC iterations = " , n_iter)
     t_end = time.time()
@@ -336,4 +343,3 @@ if __name__ == '__main__':
         my_mainfunc()
     except rospy.ROSInterruptException:
         pass
-            
