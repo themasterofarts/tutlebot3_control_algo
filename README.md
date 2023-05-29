@@ -38,3 +38,5 @@ add this new line to your .bashrc file
  
      rosrun turtlebot3_navigation script
    
+
+![mpc_multipleShooting_pointTracking_turtlebot3](https://github.com/themasterofarts/tutlebot3_control_algo/assets/51891613/18e5f87b-1c07-4d92-89a6-e195c9cba329)
